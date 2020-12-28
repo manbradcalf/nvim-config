@@ -1,0 +1,12 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =1
+let g:netrw_dirhist_1='/Users/benmedcalf/webrtc-samples/src/content/getusermedia/gum/js'
+let g:netrw_dirhist_0='/Users/benmedcalf/BookYrself/ArtieReact'
+let g:netrw_dirhist_9='/Users/benmedcalf/BookYrself/ArtieReact/android/app'
+let g:netrw_dirhist_8='/Users/benmedcalf/BookYrself/ArtieReact/src/components'
+let g:netrw_dirhist_7='/Users/benmedcalf/BookYrself/ArtieReact/src'
+let g:netrw_dirhist_6='/Users/benmedcalf/BookYrself/ArtieReact'
+let g:netrw_dirhist_5='/Users/benmedcalf/.vim/plugged/coc.nvim/build'
+let g:netrw_dirhist_4='/Users/benmedcalf'
+let g:netrw_dirhist_3='/Users/benmedcalf/BookYrself/ArtieReact'
+let g:netrw_dirhist_2='/Users/benmedcalf/BookYrself/Artie-Express/artie/api'

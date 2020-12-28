@@ -1,0 +1,16 @@
+{
+  "suggest.noselect": true,
+  "diagnostic.checkCurrentLine": true,
+  "coc.preferences.bracketEnterImprove": true,
+  "coc.preferences.hoverTarget": "float",
+  "suggest.autoTrigger": "always",
+  "diagnostic.level": "warning",
+  "coc.preferences.formatOnSaveFiletypes": [
+    "markdown",
+    "css",
+    "html",
+    "hbs",
+    "js",
+    "ts"
+  ]
+}
