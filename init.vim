@@ -69,6 +69,8 @@ hi PmenuSel ctermfg=Black ctermbg=White
 "" Set my colors to 'all' so i can toggle through
 "" all schemes in /colors
 autocmd VimEnter * :SetColors all
+"" treat handlebars as html files for formatting purporses
+autocmd BufEnter *.hbs :set ft=html
 
 augroup term_settings
     autocmd!
@@ -88,7 +90,7 @@ let mapleader = "\<Space>"
 set wrap
 set textwidth=79
 set formatoptions=qrn1
-set colorcolumn=80
+set colorcolumn=0
 
 "" exit easier
 inoremap <C-q> <C-\><C-n> 
@@ -173,8 +175,6 @@ command! -nargs=0 Prettier :CocCommand prettier.formatFile
 augroup BgHighlight
     autocmd!
     autocmd WinEnter * set cul
-    autocmd WinLeave * set nocul
-augroup END
 
 fun! TrimWhitespace()
     let l:save = winsaveview()
