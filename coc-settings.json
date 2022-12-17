@@ -12,5 +12,6 @@
     "hbs",
     "js",
     "ts"
-  ]
+  ],
+  "svelte.enable-ts-plugin": true
 }

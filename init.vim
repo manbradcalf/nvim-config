@@ -22,21 +22,25 @@ set undofile
 set undodir=~/.vim/undodir
 
 call plug#begin()
-Plug 'preservim/nerdtree'
 Plug 'flazz/vim-colorschemes'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'jremmen/vim-ripgrep'
-Plug 'ctrlpvim/ctrlp.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'mbbill/undotree'
 Plug 'eliba2/vim-node-inspect'
 Plug 'felixhummel/setcolors.vim'
 Plug 'sheerun/vim-polyglot'
+Plug 'puremourning/vimspector'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'nvim-lua/popup.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
 call plug#end()
 
+" vimspector
+let g:vimspector_enable_mappings = 'HUMAN'
 
 " --- vim go (polyglot) settings.
 let g:go_highlight_build_constraints = 1
@@ -72,17 +76,9 @@ autocmd VimEnter * :SetColors all
 "" treat handlebars as html files for formatting purporses
 autocmd BufEnter *.hbs :set ft=html
 
-augroup term_settings
-    autocmd!
-    " Do not use number and relative number for terminal inside nvim
-    autocmd TermOpen * setlocal norelativenumber nonumber
-    " Go to insert mode by default to start typing command
-    autocmd TermOpen * startinsert
-augroup END
-
 "" Set tab keys to match bracket pairs
-nnoremap <tab> %
-vnoremap <tab> %
+" nnoremap <tab> %
+" vnoremap <tab> %
 
 let mapleader = "\<Space>"
 
@@ -100,16 +96,24 @@ tnoremap <C-q> <C-\><C-n>
 nnoremap <leader>ev <C-w><C-v><C-l>:e ~/.config/nvim/init.vim<cr>
 
 " window navigation
-nnoremap <leader><Tab>[ :wincmd h<CR>
-nnoremap <leader><Tab>] :wincmd l<CR>
-nnoremap <leader>j :wincmd j<CR>
-nnoremap <leader>k :wincmd k<CR>
-nnoremap <leader>= :wincmd =<CR>
-" tab nav
-nnoremap <leader>= :+tabnext<CR>
-nnoremap <leader>- :-tabnext<CR>
-nnoremap <leader><BS> :tabclose<CR>
+nnoremap <leader><Tab>h :wincmd h<CR>
+nnoremap <leader><Tab>l :wincmd l<CR>
+nnoremap <leader><Tab>j :wincmd j<CR>
+nnoremap <leader><Tab>k :wincmd k<CR>
+nnoremap <leader>ew :wincmd =<CR>
 
+"" resize width bigger
+nnoremap <leader>. 10<C-w>>
+"" resize width smaller
+nnoremap <leader>, 10<C-w>< 
+
+" tab nav
+nnoremap <leader><Tab>] :+tabnext<CR>
+nnoremap <leader><Tab>[ :-tabnext<CR>
+nnoremap <leader><Tab><BS> :tabclose<CR>
+
+"" prettier
+nnoremap <leader>pf :Prettier<CR>
 
 "" Save 
 nnoremap <leader>s :w<CR>
@@ -118,7 +122,10 @@ nnoremap <leader>s :w<CR>
 nnoremap <leader>[ <C-o>
 nnoremap <leader>] <C-i>
 nnoremap <leader>u :UndotreeToggle<CR>
-nnoremap <leader>1 :NERDTreeToggle<CR> 
+nnoremap <leader>1 :Lexplore<CR>
+" nnoremap <leader>1 :NERDTreeToggle<CR> 
+let g:netrw_browse_split=0
+let g:netrw_winsize = 25
 nnoremap <Leader>ps :Rg<SPACE>
 nnoremap <Leader>ef :CocFix<CR>
 
@@ -138,9 +145,10 @@ nmap <leader>rr <Plug>(coc-rename)
 nmap <leader>g[ <Plug>(coc-diagnostic-prev)
 nmap <leader>g] <Plug>(coc-diagnostic-next)
 nmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>prw :CocSearch <C-R>=expand("<cword>")<CR><CR>
 
 "" Formatting and Coc utilities
-nmap <leader><Tab>l :CocCommand prettier.formatFile<CR>
+nmap <leader><Tab>f :CocCommand prettier.formatFile<CR>
 nnoremap <leader>cr :CocRestart
 nnoremap <leader>cf :CocFix<CR>
 nnoremap <leader>di :CocList diagnostics<CR>
@@ -154,6 +162,18 @@ nnoremap <leader>dn<TAB> :NodeInspectStepOver<CR>
 
 "" remove highlights
 nnoremap <leader>ho :noh<CR>
+
+" Find files using Telescope command-line sugar.
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+" Using lua functions
+nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
+nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
+nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
 
 " Git
 nmap <leader>gh :diffget //3<CR>
@@ -182,17 +202,35 @@ fun! TrimWhitespace()
     call winrestview(l:save)
 endfun
 
-"" Make Coc use tab select
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? coc#_select_confirm() :
-      \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
 
-function! s:check_back_space() abort
+"" Make Coc use tab select
+" Use tab for trigger completion with characters ahead and navigate
+" NOTE: There's always complete item selected by default, you may want to enable
+" no select by `"suggest.noselect": true` in your configuration file
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
+
+" Use <c-space> to trigger completion
+if has('nvim')
+  inoremap <silent><expr> <c-space> coc#refresh()
+else
+  inoremap <silent><expr> <c-@> coc#refresh()
+endif
 
 let g:coc_snippet_next = '<tab>'
 let g:ut = 2000
